@@ -79,7 +79,6 @@ namespace Reminder.Domain
 		{
 			var sendReminderModels = _storage
 				.Get(ReminderItemStatus.Ready)
-				.Where(r => r.IsTimeToSend)
 				.Select(r =>
 					new SendReminderModel
 					{
