@@ -13,7 +13,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Storage.InMemory.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Domain", "Reminder.Domain\Reminder.Domain.csproj", "{00457FB3-230E-4F3F-B53B-B65F08A7C794}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Domain.Tests", "Reminder.Domain.Tests\Reminder.Domain.Tests.csproj", "{97CEF11A-16CE-4443-B33B-1C3EA39C9AC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reminder.Domain.Tests", "Reminder.Domain.Tests\Reminder.Domain.Tests.csproj", "{97CEF11A-16CE-4443-B33B-1C3EA39C9AC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Reciever.Core", "Reminder.Reciever.Core\Reminder.Reciever.Core.csproj", "{429D76B9-39C1-42E7-9563-EAF8E99E31EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Reciever.Telegram", "Reminder.Reciever.Telegram\Reminder.Reciever.Telegram.csproj", "{5A614348-D1A4-4FF4-9423-3393093907A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Sender.Core", "Reminder.Sender.Core\Reminder.Sender.Core.csproj", "{690933F6-0E25-4ACB-8B61-E4C2087703B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Sender.Telegram", "Reminder.Sender.Telegram\Reminder.Sender.Telegram.csproj", "{A81947DB-5EB0-4B8A-B194-326937CDC3C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reminder.Parsing", "Reminder.Parsing\Reminder.Parsing.csproj", "{6B20C960-B10D-46CD-ABE1-73A1CC75843E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReminderApp", "ReminderApp\ReminderApp.csproj", "{06DD45F2-B504-4B0A-860E-5E2BD4A3EBC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +57,30 @@ Global
 		{97CEF11A-16CE-4443-B33B-1C3EA39C9AC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97CEF11A-16CE-4443-B33B-1C3EA39C9AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97CEF11A-16CE-4443-B33B-1C3EA39C9AC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{429D76B9-39C1-42E7-9563-EAF8E99E31EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{429D76B9-39C1-42E7-9563-EAF8E99E31EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{429D76B9-39C1-42E7-9563-EAF8E99E31EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{429D76B9-39C1-42E7-9563-EAF8E99E31EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A614348-D1A4-4FF4-9423-3393093907A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A614348-D1A4-4FF4-9423-3393093907A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A614348-D1A4-4FF4-9423-3393093907A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A614348-D1A4-4FF4-9423-3393093907A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{690933F6-0E25-4ACB-8B61-E4C2087703B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{690933F6-0E25-4ACB-8B61-E4C2087703B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{690933F6-0E25-4ACB-8B61-E4C2087703B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{690933F6-0E25-4ACB-8B61-E4C2087703B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A81947DB-5EB0-4B8A-B194-326937CDC3C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A81947DB-5EB0-4B8A-B194-326937CDC3C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A81947DB-5EB0-4B8A-B194-326937CDC3C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A81947DB-5EB0-4B8A-B194-326937CDC3C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B20C960-B10D-46CD-ABE1-73A1CC75843E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B20C960-B10D-46CD-ABE1-73A1CC75843E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B20C960-B10D-46CD-ABE1-73A1CC75843E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B20C960-B10D-46CD-ABE1-73A1CC75843E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06DD45F2-B504-4B0A-860E-5E2BD4A3EBC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06DD45F2-B504-4B0A-860E-5E2BD4A3EBC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06DD45F2-B504-4B0A-860E-5E2BD4A3EBC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06DD45F2-B504-4B0A-860E-5E2BD4A3EBC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
