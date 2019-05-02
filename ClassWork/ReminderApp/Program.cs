@@ -11,7 +11,7 @@ namespace ReminderApp
 	{
 		static void Main(string[] args)
 		{
-			const string token = "ххх";
+			const string token = "xxx";
 
 			WebProxy wpIndonesia = new WebProxy("202.169.239.66", 8080);
 			WebProxy wpMongolia = new WebProxy("202.131.229.10", 8080);

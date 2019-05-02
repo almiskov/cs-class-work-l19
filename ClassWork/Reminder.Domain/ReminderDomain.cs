@@ -158,6 +158,10 @@ namespace Reminder.Domain
 							Message = reminder.Message
 						}));
 			}
+			else
+			{
+				_sender.Send(e.ContactId, "Не понимаю =(");
+			}
 		}
 	}
 }
