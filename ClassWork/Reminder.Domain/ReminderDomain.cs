@@ -3,6 +3,9 @@ using System.Linq;
 using System.Threading;
 using Reminder.Domain.EventArgs;
 using Reminder.Domain.Model;
+using Reminder.Parsing;
+using Reminder.Reciever.Core;
+using Reminder.Sender.Core;
 using Reminder.Storage.Core;
 
 namespace Reminder.Domain
@@ -13,18 +16,26 @@ namespace Reminder.Domain
 		private readonly TimeSpan _readyRemindersSendingPeriod;
 
 		private readonly IReminderStorage _storage;
+		private readonly IReminderReciever _reciever;
+		private readonly IReminderSender _sender;
 
 		private Timer _awaitingRemindersCheckTimer;
 		private Timer _readyRemindersSendTimer;
 
-		public Action<SendReminderModel> SendReminder { get; set; }
-
+		public event EventHandler<AddingSuccededEventArgs> AddingSucceded;
 		public event EventHandler<SendingSuccededEventArgs> SendingSucceded;
 		public event EventHandler<SendingFailedEventArgs> SendingFailed;
 
-		public ReminderDomain(IReminderStorage storage)
+		public ReminderDomain(
+			IReminderStorage storage,
+			IReminderReciever reciever,
+			IReminderSender sender)
 		{
 			_storage = storage;
+			_reciever = reciever;
+			_sender = sender;
+
+			_reciever.MessageRecieved += Reciever_MessageRecieved;
 
 			_awaitingRemindersCheckingPeriod = TimeSpan.FromSeconds(1);
 			_readyRemindersSendingPeriod = TimeSpan.FromSeconds(1);
@@ -32,8 +43,10 @@ namespace Reminder.Domain
 
 		public ReminderDomain(
 			IReminderStorage storage,
+			IReminderReciever reciever,
+			IReminderSender sender,
 			TimeSpan awaitingRemindersCheckingPeriod,
-			TimeSpan readyRemindersSendingPeriod) : this(storage)
+			TimeSpan readyRemindersSendingPeriod) : this(storage, reciever, sender)
 		{
 			_awaitingRemindersCheckingPeriod = awaitingRemindersCheckingPeriod;
 			_readyRemindersSendingPeriod = readyRemindersSendingPeriod;
@@ -52,18 +65,14 @@ namespace Reminder.Domain
 				null,
 				TimeSpan.Zero,
 				_readyRemindersSendingPeriod);
+
+			_reciever.Run();
 		}
 
-		public void AddReminder(AddReminderModel addReminderModel)
+		public void Dispose()
 		{
-			_storage.Add(
-				new ReminderItem
-				{
-					Date = addReminderModel.Date,
-					ContactId = addReminderModel.ContactId,
-					Message = addReminderModel.Message,
-					Status = ReminderItemStatus.Awaiting
-				});
+			_awaitingRemindersCheckTimer?.Dispose();
+			_readyRemindersSendTimer?.Dispose();
 		}
 
 		internal void CheckAwaitingReminders(object dummy)
@@ -95,7 +104,9 @@ namespace Reminder.Domain
 			{
 				try
 				{
-					SendReminder?.Invoke(sendReminder);
+					_sender.Send(
+						sendReminder.ContactId,
+						sendReminder.Message);
 
 					_storage.UpdateStatus(
 						sendReminder.Id,
@@ -121,10 +132,32 @@ namespace Reminder.Domain
 			}
 		}
 
-		public void Dispose()
+		private void Reciever_MessageRecieved(object sender, MessageRecievedEventArgs e)
 		{
-			_awaitingRemindersCheckTimer?.Dispose();
-			_readyRemindersSendTimer?.Dispose();
+			ParsedMessage parsedMessage = MessageParser.Parse(e.Message);
+
+			if(parsedMessage != null)
+			{
+				var reminder = new ReminderItem()
+				{
+					ContactId = e.ContactId,
+					Date = parsedMessage.Date,
+					Message = parsedMessage.Message,
+					Status = ReminderItemStatus.Awaiting
+				};
+
+				_storage.Add(reminder);
+
+				AddingSucceded?.Invoke(
+					this,
+					new AddingSuccededEventArgs(
+						new AddReminderModel()
+						{
+							ContactId = reminder.ContactId,
+							Date = reminder.Date,
+							Message = reminder.Message
+						}));
+			}
 		}
 	}
 }

@@ -22,10 +22,10 @@ namespace Reminder.Parsing
 				return null;
 
 			return new ParsedMessage
-			{
-				Date = date,
-				Message = message.Substring(firstSpacePosition).Trim()
-			};
+				{
+					Date = date,
+					Message = message.Substring(firstSpacePosition).Trim()
+				};
 		}
 	}
 }

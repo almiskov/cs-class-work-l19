@@ -11,25 +11,32 @@ namespace Reminder.Reciever.Telegram
 
 		public event EventHandler<MessageRecievedEventArgs> MessageRecieved;
 
-		public TelegramReminderReciever(string token)
+		public TelegramReminderReciever(string token, WebProxy webProxy = null)
 		{
-			WebProxy wpIndonesia = new WebProxy("202.169.239.66", 8080);
-			WebProxy wpMongolia = new WebProxy("202.131.229.10", 8080);
-			WebProxy wpGermany = new WebProxy("138.201.223.250", 31288);
-
-			botClient = new TelegramBotClient(token, wpIndonesia);
-		}
-
-		public string GetHelloFromBot()
-		{
-			global::Telegram.Bot.Types.User user = botClient.GetMeAsync().Result;
-
-			return $"Hello from {user.Id}. My name is {user.FirstName} {user.LastName}";
+			botClient = new TelegramBotClient(token, webProxy);
 		}
 
 		public void Run()
 		{
-			throw new NotImplementedException();
+			botClient.OnMessage += BotClient_OnMessage;
+			botClient.StartReceiving();
+		}
+
+		private void BotClient_OnMessage(object sender, global::Telegram.Bot.Args.MessageEventArgs e)
+		{
+			if(e.Message.Type == global::Telegram.Bot.Types.Enums.MessageType.Text)
+			{
+				OnMessageRecieved(
+					this,
+					new MessageRecievedEventArgs(
+						e.Message.Chat.Id.ToString(),
+						e.Message.Text));
+			}
+		}
+
+		protected virtual void OnMessageRecieved(object sender, MessageRecievedEventArgs e)
+		{
+			MessageRecieved?.Invoke(sender, e);
 		}
 	}
 }

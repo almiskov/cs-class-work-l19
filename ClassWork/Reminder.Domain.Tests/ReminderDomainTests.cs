@@ -12,7 +12,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_Reminder_Calls_Internal_Delegate()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
@@ -43,7 +43,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_On_SendReminder_Exception_SendingFailed_Event_Raised()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
 				TimeSpan.FromMilliseconds(100),
@@ -78,7 +78,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_On_SendReminder_OK_SendingSuccedded_Event_Raised()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
 				TimeSpan.FromMilliseconds(100),
@@ -108,7 +108,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_Add_Method_Adds_AddReminderModel_Into_Storage()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
@@ -128,7 +128,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_Added_ReminderItem_Has_Awaiting_Status()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
@@ -153,7 +153,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_CheckAwaitingReminders_Method_Turns_Awaiting_Status_Into_Ready()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
 				TimeSpan.FromMilliseconds(100),
@@ -179,7 +179,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_SendReadyReminders_Method_Turns_Ready_Status_Into_Sent_If_Sending_Succeded()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 
 			using(var reminderDomain = new ReminderDomain(
 				reminderStorage,
@@ -207,7 +207,7 @@ namespace Reminder.Domain.Tests
 		[TestMethod]
 		public void Check_That_SendReadyReminders_Method_Turns_Ready_Status_Into_Failed_If_Sending_Failed()
 		{
-			var reminderStorage = new ReminderStorage();
+			var reminderStorage = new InMemoryReminderStorage();
 
 			using (var reminderDomain = new ReminderDomain(
 				reminderStorage,
