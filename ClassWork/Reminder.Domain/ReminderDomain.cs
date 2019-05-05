@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Reminder.Domain.EventArgs;
 using Reminder.Domain.Model;
+using Reminder.Logger.Core;
 using Reminder.Parsing;
 using Reminder.Reciever.Core;
 using Reminder.Sender.Core;
@@ -18,6 +19,7 @@ namespace Reminder.Domain
 		private readonly IReminderStorage _storage;
 		private readonly IReminderReciever _reciever;
 		private readonly IReminderSender _sender;
+		private readonly ILogger _logger;
 
 		private Timer _awaitingRemindersCheckTimer;
 		private Timer _readyRemindersSendTimer;
@@ -29,24 +31,32 @@ namespace Reminder.Domain
 		public ReminderDomain(
 			IReminderStorage storage,
 			IReminderReciever reciever,
-			IReminderSender sender)
+			IReminderSender sender,
+			ILogger logger)
 		{
 			_storage = storage;
 			_reciever = reciever;
 			_sender = sender;
+			_logger = logger;
 
 			_reciever.MessageRecieved += Reciever_MessageRecieved;
 
 			_awaitingRemindersCheckingPeriod = TimeSpan.FromSeconds(1);
 			_readyRemindersSendingPeriod = TimeSpan.FromSeconds(1);
+
+			_storage.StatusUpdated += (s, e) =>
+				_logger.Log($"{e.Reminder.Id} is {e.Reminder.Status}" +
+							$"{(e.Reminder.Status == ReminderItemStatus.Awaiting ? "\t" : "\t\t")}" +
+							$"({e.Reminder.ContactId} {e.Reminder.Date} {e.Reminder.Message})");
 		}
 
 		public ReminderDomain(
 			IReminderStorage storage,
 			IReminderReciever reciever,
 			IReminderSender sender,
+			ILogger logger,
 			TimeSpan awaitingRemindersCheckingPeriod,
-			TimeSpan readyRemindersSendingPeriod) : this(storage, reciever, sender)
+			TimeSpan readyRemindersSendingPeriod) : this(storage, reciever, sender, logger)
 		{
 			_awaitingRemindersCheckingPeriod = awaitingRemindersCheckingPeriod;
 			_readyRemindersSendingPeriod = readyRemindersSendingPeriod;
@@ -136,7 +146,7 @@ namespace Reminder.Domain
 		{
 			ParsedMessage parsedMessage = MessageParser.Parse(e.Message);
 
-			if(parsedMessage != null)
+			if (parsedMessage != null)
 			{
 				var reminder = new ReminderItem()
 				{

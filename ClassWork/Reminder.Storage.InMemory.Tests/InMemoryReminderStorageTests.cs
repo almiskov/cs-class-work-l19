@@ -7,7 +7,7 @@ using Reminder.Storage.Core;
 namespace Reminder.Storage.InMemory.Tests
 {
 	[TestClass]
-	public class ReminderStorageTests
+	public class InMemoryReminderStorageTests
 	{
 		[TestMethod]
 		public void Add_Method_Adds_Single_Reminder()
@@ -230,7 +230,6 @@ namespace Reminder.Storage.InMemory.Tests
 			Assert.AreEqual(2, actual.Count);
 		}
 
-
 		[TestMethod]
 		public void Get_Method_With_Status_Only_Returns_All_Reminders_With_Requested_Status()
 		{
@@ -321,6 +320,49 @@ namespace Reminder.Storage.InMemory.Tests
 			var actual = storage.Get(ReminderItemStatus.Failed);
 			Assert.IsNotNull(actual);
 			Assert.AreEqual(1, actual.Count);
+		}
+
+		[TestMethod]
+		public void Add_Method_Calls_StatusUpdated_Event()
+		{
+			var reminder = new ReminderItem
+			{
+				Date = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(1)),
+				Message = "Test",
+				Status = ReminderItemStatus.Awaiting
+			};
+
+			bool eventHandlerCalled = false;
+
+			var storage = new InMemoryReminderStorage();
+
+			storage.StatusUpdated += (s, e) => eventHandlerCalled = true;
+
+			storage.Add(reminder);
+
+			Assert.IsTrue(eventHandlerCalled);
+		}
+
+		[TestMethod]
+		public void UpdateStatus_Method_Calls_StatusUpdated_Event()
+		{
+			var reminder = new ReminderItem
+			{
+				Date = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(1)),
+				Message = "Test",
+				Status = ReminderItemStatus.Awaiting
+			};
+
+			bool eventHandlerCalled = false;
+
+			var storage = new InMemoryReminderStorage();
+			storage.Add(reminder);
+
+			storage.StatusUpdated += (s, e) => eventHandlerCalled = true;
+
+			storage.UpdateStatus(reminder.Id, ReminderItemStatus.Sent);
+
+			Assert.IsTrue(eventHandlerCalled);
 		}
 	}
 }

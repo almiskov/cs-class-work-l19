@@ -6,5 +6,7 @@ namespace Reminder.Parsing
 	{
 		public DateTimeOffset Date { get; set; }
 		public string Message { get; set; }
+
+		public static string DefaultMessage => "Что-то";
 	}
 }

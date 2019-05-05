@@ -1,0 +1,11 @@
+Reminder.Domain					+
+Reminder.Logger.Console			нууу хз
+Reminder.Logger.Core			Не нужно
+Reminder.Parsing				+
+Reminder.Reciever.Core			+
+Reminder.Reciever.Telegram		+
+Reminder.Sender.Core			Не нужно
+Reminder.Sender.Telegram		+
+Reminder.Storage.Core			+
+Reminder.Storage.InMemory		+
+ReminderApp						не нужно

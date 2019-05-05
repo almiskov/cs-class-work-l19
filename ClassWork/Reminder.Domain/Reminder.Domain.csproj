@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Reminder.Logger.Core\Reminder.Logger.Core.csproj" />
     <ProjectReference Include="..\Reminder.Parsing\Reminder.Parsing.csproj" />
     <ProjectReference Include="..\Reminder.Reciever.Core\Reminder.Reciever.Core.csproj" />
     <ProjectReference Include="..\Reminder.Sender.Core\Reminder.Sender.Core.csproj" />

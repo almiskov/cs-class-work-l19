@@ -3,238 +3,196 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Reminder.Storage.InMemory;
 using Reminder.Domain.Model;
+using Moq;
+using Reminder.Sender.Core;
+using Reminder.Reciever.Core;
+using Reminder.Storage.Core;
+using Reminder.Logger.Core;
+using Reminder.Sender.Telegram;
+using System.Net;
+using Reminder.Reciever.Telegram;
 
 namespace Reminder.Domain.Tests
 {
 	[TestClass]
 	public class ReminderDomainTests
 	{
+		private Mock<IReminderStorage> mockStorage = new Mock<IReminderStorage>();
+		private Mock<IReminderReciever> mockReciever = new Mock<IReminderReciever>();
+		private Mock<IReminderSender> mockSender = new Mock<IReminderSender>();
+		private Mock<ILogger> mockLogger = new Mock<ILogger>();
+
 		[TestMethod]
-		public void Check_That_Reminder_Calls_Internal_Delegate()
+		public void Check_That_Awaiting_Status_Turns_Into_Ready_When_It_Must_Turn()
 		{
-			var reminderStorage = new InMemoryReminderStorage();
-
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// arrange
+			ReminderItem reminder = new ReminderItem()
 			{
-				bool delegateWasCalled = false;
+				ContactId = "254536066",
+				Date = DateTimeOffset.Now,
+				Message = "Test message",
+				Status = ReminderItemStatus.Awaiting
+			};
 
-				reminderDomain.SendReminder += (reminder) =>
-				{
-					delegateWasCalled = true;
-				};
+			mockStorage.Setup(x => x.Add(reminder));
 
-				reminderDomain.AddReminder(
-					new AddReminderModel
-					{
-						Date = DateTimeOffset.Now
-					});
+			// act
+			using (var domain = new ReminderDomain(
+				mockStorage.Object,
+				mockReciever.Object,
+				mockSender.Object,
+				mockLogger.Object,
+				TimeSpan.FromMilliseconds(10),
+				TimeSpan.FromMilliseconds(1000)))
+			{
+				domain.Run();
 
-				reminderDomain.Run();
-
-				Thread.Sleep(300);
-
-				Assert.IsTrue(delegateWasCalled);
+				Thread.Sleep(50);
 			}
+
+			// assert
+			Assert.AreEqual(ReminderItemStatus.Ready, reminder.Status);
 		}
 
 		[TestMethod]
-		public void Check_That_On_SendReminder_Exception_SendingFailed_Event_Raised()
+		public void Check_That_Status_Is_Sent_If_Reminder_Has_Been_Sent()
 		{
-			var reminderStorage = new InMemoryReminderStorage();
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// arrange
+			ReminderItem reminder = new ReminderItem()
 			{
-				reminderDomain.SendReminder += (reminder) =>
-				{
-					throw new Exception();
-				};
+				ContactId = "254536066",
+				Date = DateTimeOffset.Now,
+				Message = "Test message",
+				Status = ReminderItemStatus.Awaiting
+			};
 
-				bool eventHandlerCalled = false;
+			mockStorage.Setup(x => x.Add(reminder));
 
-				reminderDomain.SendingFailed += (s, e) =>
-				{
-					eventHandlerCalled = true;
-				};
+			// act
+			using (var domain = new ReminderDomain(
+				mockStorage.Object,
+				mockReciever.Object,
+				mockSender.Object,
+				mockLogger.Object,
+				TimeSpan.FromMilliseconds(10),
+				TimeSpan.FromMilliseconds(10)))
+			{
+				domain.Run();
 
-				reminderDomain.AddReminder(
-					new AddReminderModel
-					{
-						Date = DateTimeOffset.Now
-					});
-
-				reminderDomain.Run();
-
-				Thread.Sleep(300);
-
-				Assert.IsTrue(eventHandlerCalled);
+				Thread.Sleep(50);
 			}
+
+			// assert
+			Assert.AreEqual(ReminderItemStatus.Sent, reminder.Status);
 		}
 
 		[TestMethod]
-		public void Check_That_On_SendReminder_OK_SendingSuccedded_Event_Raised()
+		public void Check_That_SendingSucceded_Raised_If_Reminder_Has_Been_Sent()
 		{
-			var reminderStorage = new InMemoryReminderStorage();
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// arrange
+			ReminderItem reminder = new ReminderItem()
 			{
-				bool eventHandlerCalled = false;
+				ContactId = "254536066",
+				Date = DateTimeOffset.Now,
+				Message = "Test message",
+				Status = ReminderItemStatus.Awaiting
+			};
 
-				reminderDomain.SendingSucceded += (s, e) =>
-				{
-					eventHandlerCalled = true;
-				};
+			var storage = new InMemoryReminderStorage();
+			storage.Add(reminder);
 
-				reminderDomain.AddReminder(
-					new AddReminderModel
-					{
-						Date = DateTimeOffset.Now
-					});
+			bool isCalled = false;
 
-				reminderDomain.Run();
+			// act
+			using (var domain = new ReminderDomain(
+				storage,
+				mockReciever.Object,
+				mockSender.Object,
+				mockLogger.Object,
+				TimeSpan.FromMilliseconds(10),
+				TimeSpan.FromMilliseconds(10)))
+			{
+				domain.SendingSucceded += (s, e) => isCalled = true;
 
-				Thread.Sleep(300);
+				domain.Run();
 
-				Assert.IsTrue(eventHandlerCalled);
+				Thread.Sleep(50);
 			}
+
+			// assert
+			Assert.IsTrue(isCalled);
 		}
 
 		[TestMethod]
-		public void Check_That_Add_Method_Adds_AddReminderModel_Into_Storage()
+		public void Check_That_Status_Is_Failed_If_Sending_Failed()
 		{
-			var reminderStorage = new InMemoryReminderStorage();
-
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// arrange
+			ReminderItem reminder = new ReminderItem()
 			{
-				reminderDomain.AddReminder(
-					new AddReminderModel()
-					{
-						Date = DateTimeOffset.Now
-					});
+				ContactId = "254536066",
+				Date = DateTimeOffset.Now,
+				Message = "Test message",
+				Status = ReminderItemStatus.Awaiting
+			};
 
-				Assert.AreEqual(1, reminderStorage.Count);
+			mockStorage.Setup(x => x.Add(reminder));
+			mockSender.Setup(x => x.Send(reminder.ContactId, reminder.Message)).Throws(new Exception());
+
+			// act
+			using (var domain = new ReminderDomain(
+				mockStorage.Object,
+				mockReciever.Object,
+				mockSender.Object,
+				mockLogger.Object,
+				TimeSpan.FromMilliseconds(10),
+				TimeSpan.FromMilliseconds(10)))
+			{
+				domain.Run();
+
+				Thread.Sleep(50);
 			}
+
+			// assert
+			Assert.AreEqual(ReminderItemStatus.Failed, reminder.Status);
 		}
 
 		[TestMethod]
-		public void Check_That_Added_ReminderItem_Has_Awaiting_Status()
+		public void Check_That_SendingFailed_Raised_If_Sending_Failed()
 		{
-			var reminderStorage = new InMemoryReminderStorage();
-
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// arrange
+			ReminderItem reminder = new ReminderItem()
 			{
-				var reminderModel = new AddReminderModel()
-				{
-					Date = DateTimeOffset.Now + TimeSpan.FromMilliseconds(1000)
-				};
+				ContactId = "254536066",
+				Date = DateTimeOffset.Now,
+				Message = "Test message",
+				Status = ReminderItemStatus.Awaiting
+			};
 
-				reminderDomain.AddReminder(reminderModel);
+			var storage = new InMemoryReminderStorage();
+			storage.Add(reminder);
 
-				var status = reminderStorage.Get(1)[0].Status;
+			mockSender.Setup(x => x.Send(reminder.ContactId, reminder.Message)).Throws(new Exception());
 
-				Assert.AreEqual(
-					Storage.Core.ReminderItemStatus.Awaiting,
-					status);
-			}
-		}
+			bool isCalled = false;
 
-		[TestMethod]
-		public void Check_That_CheckAwaitingReminders_Method_Turns_Awaiting_Status_Into_Ready()
-		{
-			var reminderStorage = new InMemoryReminderStorage();
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
+			// act
+			using (var domain = new ReminderDomain(
+				storage,
+				mockReciever.Object,
+				mockSender.Object,
+				mockLogger.Object,
+				TimeSpan.FromMilliseconds(10),
+				TimeSpan.FromMilliseconds(10)))
 			{
-				var reminderModel = new AddReminderModel()
-				{
-					Date = DateTimeOffset.Now
-				};
+				domain.SendingFailed += (s, e) => isCalled = true;
 
-				reminderDomain.AddReminder(reminderModel);
+				domain.Run();
 
-				reminderDomain.CheckAwaitingReminders(null);
-
-				var status = reminderStorage.Get(1)[0].Status;
-
-				Assert.AreEqual(
-					Storage.Core.ReminderItemStatus.Ready,
-					status);
+				Thread.Sleep(50);
 			}
-		}
 
-		[TestMethod]
-		public void Check_That_SendReadyReminders_Method_Turns_Ready_Status_Into_Sent_If_Sending_Succeded()
-		{
-			var reminderStorage = new InMemoryReminderStorage();
-
-			using(var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
-			{
-				var reminderModel = new AddReminderModel()
-				{
-					Date = DateTimeOffset.Now
-				};
-
-				reminderDomain.AddReminder(reminderModel);
-
-				reminderDomain.CheckAwaitingReminders(null);
-				reminderDomain.SendReadyReminders(null);
-
-				var status = reminderStorage.Get(1)[0].Status;
-
-				Assert.AreEqual(
-					Storage.Core.ReminderItemStatus.Sent,
-					status);
-			}
-		}
-
-		[TestMethod]
-		public void Check_That_SendReadyReminders_Method_Turns_Ready_Status_Into_Failed_If_Sending_Failed()
-		{
-			var reminderStorage = new InMemoryReminderStorage();
-
-			using (var reminderDomain = new ReminderDomain(
-				reminderStorage,
-				TimeSpan.FromMilliseconds(100),
-				TimeSpan.FromMilliseconds(100)))
-			{
-				var reminderModel = new AddReminderModel()
-				{
-					Date = DateTimeOffset.Now
-				};
-
-				reminderDomain.SendReminder += r =>
-				{
-					throw new Exception();
-				};
-
-				reminderDomain.AddReminder(reminderModel);
-
-				reminderDomain.CheckAwaitingReminders(null);
-				reminderDomain.SendReadyReminders(null);
-
-				var status = reminderStorage.Get(1)[0].Status;
-
-				Assert.AreEqual(
-					Storage.Core.ReminderItemStatus.Failed,
-					status);
-			}
+			// assert
+			Assert.IsTrue(isCalled);
 		}
 	}
 }

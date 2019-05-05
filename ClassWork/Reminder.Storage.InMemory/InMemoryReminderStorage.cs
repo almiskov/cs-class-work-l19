@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Reminder.Storage.Core;
+using Reminder.Storage.InMemory.EventArgs;
 
 namespace Reminder.Storage.InMemory
 {
@@ -11,6 +12,8 @@ namespace Reminder.Storage.InMemory
 	public class InMemoryReminderStorage : IReminderStorage
 	{
 		internal readonly Dictionary<Guid, ReminderItem> Reminders;
+
+		public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 
 		/// <summary>
 		/// Initializes a new instance.
@@ -31,6 +34,10 @@ namespace Reminder.Storage.InMemory
 		public void Add(ReminderItem item)
 		{
 			Reminders.Add(item.Id, item);
+
+			StatusUpdated?.Invoke(
+				this,
+				new StatusUpdatedEventArgs(item));
 		}
 
 		/// <summary>
@@ -97,6 +104,10 @@ namespace Reminder.Storage.InMemory
 			foreach (Guid id in Reminders.Keys.Where(x => ids.Contains(x)))
 			{
 				Reminders[id].Status = status;
+
+				StatusUpdated?.Invoke(
+					this,
+					new StatusUpdatedEventArgs(Reminders[id]));
 			}
 		}
 
@@ -106,7 +117,13 @@ namespace Reminder.Storage.InMemory
 		public void UpdateStatus(Guid id, ReminderItemStatus status)
 		{
 			if (Reminders.ContainsKey(id))
+			{
 				Reminders[id].Status = status;
+
+				StatusUpdated?.Invoke(
+					this,
+					new StatusUpdatedEventArgs(Reminders[id]));
+			}
 		}
 	}
 }

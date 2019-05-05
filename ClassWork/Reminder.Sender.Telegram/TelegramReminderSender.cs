@@ -6,7 +6,7 @@ namespace Reminder.Sender.Telegram
 {
 	public class TelegramReminderSender : IReminderSender
 	{
-		private TelegramBotClient botClient;
+		internal TelegramBotClient botClient;
 
 		public TelegramReminderSender(string token, WebProxy webProxy = null)
 		{

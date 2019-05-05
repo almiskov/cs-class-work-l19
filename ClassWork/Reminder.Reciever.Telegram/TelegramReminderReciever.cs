@@ -7,7 +7,7 @@ namespace Reminder.Reciever.Telegram
 {
 	public class TelegramReminderReciever : IReminderReciever
 	{
-		private TelegramBotClient botClient;
+		internal TelegramBotClient botClient;
 
 		public event EventHandler<MessageRecievedEventArgs> MessageRecieved;
 
@@ -34,7 +34,7 @@ namespace Reminder.Reciever.Telegram
 			}
 		}
 
-		protected virtual void OnMessageRecieved(object sender, MessageRecievedEventArgs e)
+		protected internal virtual void OnMessageRecieved(object sender, MessageRecievedEventArgs e)
 		{
 			MessageRecieved?.Invoke(sender, e);
 		}

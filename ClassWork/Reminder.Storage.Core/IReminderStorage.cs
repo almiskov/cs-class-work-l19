@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reminder.Storage.InMemory.EventArgs;
+using System;
 using System.Collections.Generic;
 
 namespace Reminder.Storage.Core
@@ -8,6 +9,8 @@ namespace Reminder.Storage.Core
 	/// </summary>
 	public interface IReminderStorage
 	{
+		event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
+
 		/// <summary>
 		/// Gets the number of the items in the storage.
 		/// </summary>
